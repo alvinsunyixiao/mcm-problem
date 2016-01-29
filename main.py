@@ -1,17 +1,19 @@
 import networkx as nx
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import random
 import numpy
 import math
+import multiprocessing
 
-n = 10000        #Population Count
-m = 150000       #Relationship Count
+n = 1000        #Population Count
+m = 20000       #Relationship Count
 time = 0.08
 interval = 0.01
 repostRate = 10
+explosiveness = 1
 
 def negativeExpo(time):
-    return math.e**(2.575*time)
+    return math.e**(-2.575*time)
 
 class Person:
     def __init__(self,info,count):
@@ -25,7 +27,8 @@ class Person:
 
     def rePostJudge(self,rate,time):
         p = 1.0 * rate / 100
-        if random.random()*negativeExpo(time)<p:
+        self.repostrate=p*negativeExpo(time)*explosiveness
+        if random.random()<self.repostrate:
             return True
         else:
             return False
@@ -37,14 +40,25 @@ class Crowd:
         for n in self.dg:
             self.dg.node[n] = Person(False,0)
             self.nodecolor.append('r')
-        self.FirstGuy = random.randint(1,n)
-        self.dg.node[self.FirstGuy] = Person(True,0)
-        self.dg.node[self.FirstGuy].repost = True
+        #self.linkrecord = [self.initwithMostSocial()]
+        self.initwithMostSocial()
         self.time = time
         self.record = [(self.FirstGuy,0)]
         self.nodecolor[self.FirstGuy-1]='b'
         self.timeLine = 0
 
+
+    def initwithMostSocial(self):
+        maxcount = 0
+        maxindex = 0
+        for n in self.dg:
+            if len(self.dg[n])>maxcount:
+                maxcount = len(self.dg[n])
+                maxindex = n
+        self.FirstGuy = maxindex
+        self.dg.node[self.FirstGuy] = Person(True,0)
+        self.dg.node[self.FirstGuy].repost = True
+        return maxcount
 
     def getMap(self):
         return self.dg
@@ -86,9 +100,10 @@ class Crowd:
             else:
                 if self.dg.node[n].access == True and self.dg.node[n].count <= 0:
                     self.dg.node[n].info = True
-                    self.record.append((n,self.timeLine))
                     self.dg.node[n].calcPost(self.timeLine)
+                    self.record.append((n,self.timeLine,self.dg.node[n].repost,self.dg.node[n].repostrate))
                     self.nodecolor[n-1]='b'
+                    #self.linkrecord.append(len(self.dg[n]))
                 elif self.dg.node[n].access == True:
                     self.dg.node[n].count -= interval
         return
@@ -98,15 +113,19 @@ class Crowd:
         for i in range(ct):
             self.update()
 
+countBox = []
+for i in range(20):
+    countBox.append(0)
+
+
+
+
 
 myCrowd = Crowd(n,m,time)
-myCrowd.updateWithTime(3)
-dg = myCrowd.getMap()
-numCount = 0
-for each in myCrowd.record:
-    numCount += 1
-    print each
-print numCount
-#print myCrowd.edgebox
-#nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor)
-#plt.show()
+myCrowd.updateWithTime(4)
+countBox[int((len(myCrowd.record)-1)/50)] += 1
+print i
+
+print countBox
+nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor)
+plt.show()
