@@ -6,17 +6,13 @@ n = 20        #Population Count
 m = 150       #Relationship Count
 time = 0.08
 
+def rePostJudge(rate):
+        p = 1.0 * rate / 100
+        print p
+        print random.random()
+        if p<random.random():
+            return True
+        else:
+            return False
 
-
-
-dg = nx.DiGraph()
-dg.add_nodes_from([1,2,3,4])
-dg.add_edges_from([(1,2),(1,3),(4,1),(2,3)])
-for n in dg:
-    nodes = dg[n]
-    print nodes
-    for k in nodes:
-        print k
-    print ' '
-nx.draw_networkx(dg)
-#plt.show()
+print rePostJudge(10)
