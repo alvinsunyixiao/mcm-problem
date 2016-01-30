@@ -5,49 +5,54 @@ import numpy
 import math
 #import multiprocessing
 print 'note: 3.01-4'
-n = 100        #Population Count
-m = 2000      #Relationship Count
-time = 0.08
+n = 3         #Newspaper Seller Count
+m = 5         #Region Count
 interval = 0.01
-repostRate = 10
-explosiveness = 0.5
 totalTime = 4
+posreg = [(0,3,0,1),(6,9,0,1),(12,15,0,1),(18,21,0,1),(24,27,0,1)]
+
+def calcRandPoint(reg):
+    xmin = reg[0]
+    xmax = reg[1]
+    ymin = reg[2]
+    ymax = reg[3]
+    randx = random.random()*(xmax-xmin)+xmin
+    randy = random.random()*(ymax-ymin)+ymin
+    return (randx,randy)
+
+def uniformdis(n):
+    if random.random()<n:
+        return True
+    else:
+        return False
 
 def negativeExpo(time):
     return math.e**(-2.575*time)
 
 class Person:
-    def __init__(self,info,count):
+    def __init__(self,info,count,region):
         self.info = info
         self.count = count
-        self.access = count
-        self.repost = False
-
-    def calcPost(self,time):
-        self.repost = self.rePostJudge(repostRate,time)
-
-    def rePostJudge(self,rate,time):
-        p = 1.0 * rate / 100
-        self.repostrate=p*negativeExpo(time)*explosiveness
-        if random.random()<self.repostrate:
-            return True
-        else:
-            return False
+        self.region = region
 
 class Crowd:
-    def __init__(self,n,m,time):
+    def __init__(self,n,m):
         self.dg,self.edgebox = self.creatRelationshipMap(n,m)
         self.nodecolor = []
-        self.fontcolor = []
+        self.posdict = {}
         for i in self.dg:
-            self.dg.node[i] = Person(False,0)
-            self.nodecolor.append((1,0,0))
-        #self.linkrecord = [self.initwithMostSocial()]
-        self.initwithMostSocial()
-        #self.initwithOne(n)
-        self.time = time
-        self.record = [(self.FirstGuy,0)]
-        self.nodecolor[self.FirstGuy-1]=(0,0,0.5)
+            if i<1000:
+                ireg = int((i-1)/10)+1
+                self.dg.node[i] = Person(False,0,ireg)
+                self.nodecolor.append((1,0,0))
+                cord = calcRandPoint(posreg[self.dg.node[i].region-1])
+                self.posdict[i] = cord
+            else:
+                nm = i/1000
+                cord = (6*nm-4.5,-3.0)
+                self.dg.node[i] = Person(True,0,nm)
+                self.nodecolor.append((1,0,0))
+                self.posdict[i] = cord
         self.timeLine = 0
 
 
@@ -75,22 +80,25 @@ class Crowd:
         dg = nx.DiGraph()
         nbox = []
         for i in range(n):
+            nbox.append((i+1)*1000)
+        for i in range(m*10):
             nbox.append(i+1)
         edgebox = []
+        print nbox
         dg.add_nodes_from(nbox)
-        for i in range(m):
-            a = random.randint(1,n)
-            b = random.randint(1,n)
-            while ((a,b) in edgebox) or a==b:
-                a = random.randint(1,n)
-                b = random.randint(1,n)
-            edgebox.append((a,b))
-        dg.add_edges_from(edgebox)
+        for i in range(m*10):
+            ireg = int(i/m)+1
+            mark = uniformdis(0.8)
+            if mark and ireg<=n:
+                edgebox.append((ireg*1000,i+1,0.08))
+            else:
+                randreg = random.randint(1,n)
+                while randreg==ireg:
+                    randreg = random.randint(1,n)
+                randreg *= 1000
+                edgebox.append((randreg,i+1,2))
+        dg.add_weighted_edges_from(edgebox)
         return dg,edgebox
-
-    def gammaFunc(self):
-        randomVar = numpy.random.gamma(self.time, scale=1.0, size=None)
-        return randomVar
 
     def update(self):
         self.timeLine += interval
@@ -139,10 +147,10 @@ print avgbox
 '''
 
 
-myCrowd = Crowd(n,m,time)
-myCrowd.updateWithTime(totalTime)
+myCrowd = Crowd(n,m)
+#myCrowd.updateWithTime(totalTime)
 dg = myCrowd.getMap()
-print len(myCrowd.record)
 
-#nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor,with_labels=False)
-#plt.show()
+
+nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor,with_labels=False,pos=myCrowd.posdict)
+plt.show()

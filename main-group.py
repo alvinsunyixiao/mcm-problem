@@ -5,12 +5,12 @@ import numpy
 import math
 #import multiprocessing
 print 'note: 3.01-4'
-n = 100        #Population Count
-m = 2000      #Relationship Count
+n = 10        #Population Count
+m = 20      #Relationship Count
 time = 0.08
 interval = 0.01
 repostRate = 10
-explosiveness = 0.5
+explosiveness = 1
 totalTime = 4
 
 def negativeExpo(time):
@@ -35,19 +35,17 @@ class Person:
             return False
 
 class Crowd:
-    def __init__(self,n,m,time):
-        self.dg,self.edgebox = self.creatRelationshipMap(n,m)
+    def __init__(self,n,time):
+        self.dg,self.edgebox = self.creatRelationshipMap(n)
         self.nodecolor = []
         self.fontcolor = []
         for i in self.dg:
             self.dg.node[i] = Person(False,0)
             self.nodecolor.append((1,0,0))
         #self.linkrecord = [self.initwithMostSocial()]
-        self.initwithMostSocial()
+        #self.initwithMostSocial()
         #self.initwithOne(n)
         self.time = time
-        self.record = [(self.FirstGuy,0)]
-        self.nodecolor[self.FirstGuy-1]=(0,0,0.5)
         self.timeLine = 0
 
 
@@ -61,30 +59,33 @@ class Crowd:
         self.FirstGuy = maxindex
         self.dg.node[self.FirstGuy] = Person(True,0)
         self.dg.node[self.FirstGuy].repost = True
+        self.record = [(self.FirstGuy,0)]
+        self.nodecolor[self.FirstGuy-1]=(0,0,0.5)
         return maxcount
 
     def initwithOne(self,n):
         self.FirstGuy = 1
         self.dg.node[self.FirstGuy] = Person(True,0)
         self.dg.node[self.FirstGuy].repost = True
+        self.record = [(self.FirstGuy,0)]
+        self.nodecolor[self.FirstGuy-1]=(0,0,0.5)
+
     def getMap(self):
         return self.dg
 
 
-    def creatRelationshipMap(self,n,m):
+    def creatRelationshipMap(self,n):
         dg = nx.DiGraph()
         nbox = []
         for i in range(n):
             nbox.append(i+1)
         edgebox = []
         dg.add_nodes_from(nbox)
-        for i in range(m):
-            a = random.randint(1,n)
-            b = random.randint(1,n)
-            while ((a,b) in edgebox) or a==b:
-                a = random.randint(1,n)
-                b = random.randint(1,n)
-            edgebox.append((a,b))
+        for i in range(n):
+            for j in range(n):
+                if i==j:
+                    continue
+                edgebox.append((i+1,j+1))
         dg.add_edges_from(edgebox)
         return dg,edgebox
 
@@ -139,10 +140,10 @@ print avgbox
 '''
 
 
-myCrowd = Crowd(n,m,time)
-myCrowd.updateWithTime(totalTime)
+myCrowd = Crowd(n,time)
+#myCrowd.updateWithTime(totalTime)
 dg = myCrowd.getMap()
-print len(myCrowd.record)
 
-#nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor,with_labels=False)
-#plt.show()
+print myCrowd.edgebox
+nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor,with_labels=False)
+plt.show()
