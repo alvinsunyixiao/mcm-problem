@@ -1,16 +1,17 @@
 import networkx as nx
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import random
 import numpy
 import math
-import multiprocessing
-
+#import multiprocessing
+print 'note: 3.01-4'
 n = 1000        #Population Count
-m = 20000       #Relationship Count
-time = 0.08
+m = 50000      #Relationship Count
+time = 0.2
 interval = 0.01
 repostRate = 10
 explosiveness = 1
+totalTime = 0.1
 
 def negativeExpo(time):
     return math.e**(-2.575*time)
@@ -37,14 +38,16 @@ class Crowd:
     def __init__(self,n,m,time):
         self.dg,self.edgebox = self.creatRelationshipMap(n,m)
         self.nodecolor = []
-        for n in self.dg:
-            self.dg.node[n] = Person(False,0)
-            self.nodecolor.append('r')
+        self.fontcolor = []
+        for i in self.dg:
+            self.dg.node[i] = Person(False,0)
+            self.nodecolor.append((1,0,0))
         #self.linkrecord = [self.initwithMostSocial()]
         self.initwithMostSocial()
+        #self.initwithOne(n)
         self.time = time
         self.record = [(self.FirstGuy,0)]
-        self.nodecolor[self.FirstGuy-1]='b'
+        self.nodecolor[self.FirstGuy-1]=(0,0,0.5)
         self.timeLine = 0
 
 
@@ -60,6 +63,10 @@ class Crowd:
         self.dg.node[self.FirstGuy].repost = True
         return maxcount
 
+    def initwithOne(self,n):
+        self.FirstGuy = 1
+        self.dg.node[self.FirstGuy] = Person(True,0)
+        self.dg.node[self.FirstGuy].repost = True
     def getMap(self):
         return self.dg
 
@@ -87,6 +94,7 @@ class Crowd:
 
     def update(self):
         self.timeLine += interval
+        #print self.timeLine
         for n in self.dg:
             if self.dg.node[n].info == True:
                 nodes = self.dg[n]
@@ -102,7 +110,7 @@ class Crowd:
                     self.dg.node[n].info = True
                     self.dg.node[n].calcPost(self.timeLine)
                     self.record.append((n,self.timeLine,self.dg.node[n].repost,self.dg.node[n].repostrate))
-                    self.nodecolor[n-1]='b'
+                    #self.nodecolor[n-1]=((self.timeLine/totalTime)**(1.0/3),(self.timeLine/totalTime)**(1.0/4),0.5+0.5*(self.timeLine/totalTime)**(1.0/5))
                     #self.linkrecord.append(len(self.dg[n]))
                 elif self.dg.node[n].access == True:
                     self.dg.node[n].count -= interval
@@ -113,19 +121,28 @@ class Crowd:
         for i in range(ct):
             self.update()
 
-countBox = []
-for i in range(20):
-    countBox.append(0)
-
-
-
+avgbox = []
+totalTimebox = []
+'''
+while totalTime<=4:
+    totalTimebox.append(totalTime)
+    total = 0
+    for i in range(100):
+        myCrowd = Crowd(n,m,time)
+        myCrowd.updateWithTime(totalTime)
+        total += len(myCrowd.record)
+    avg = int(total/100)
+    avgbox.append(avg)
+    totalTime += 0.01
+print totalTimebox
+print avgbox
+'''
 
 
 myCrowd = Crowd(n,m,time)
-myCrowd.updateWithTime(4)
-countBox[int((len(myCrowd.record)-1)/50)] += 1
-print i
+myCrowd.updateWithTime(totalTime)
+print len(myCrowd.record)
 
-print countBox
-nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor)
-plt.show()
+
+#nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor,with_labels=False)
+#plt.show()
