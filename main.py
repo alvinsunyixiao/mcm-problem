@@ -1,17 +1,17 @@
 import networkx as nx
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import random
 import numpy
 import math
 #import multiprocessing
-print 'note: 3.01-4'
-n = 100        #Population Count
-m = 2000      #Relationship Count
+print 'note: 3-3.99'
+n = 1000        #Population Count
+m = 30000      #Relationship Count
 time = 0.08
 interval = 0.01
 repostRate = 10
 explosiveness = 0.5
-totalTime = 4
+totalTime = 3
 
 def negativeExpo(time):
     return math.e**(-2.575*time)
@@ -22,6 +22,7 @@ class Person:
         self.count = count
         self.access = count
         self.repost = False
+        self.repostrate = 1
 
     def calcPost(self,time):
         self.repost = self.rePostJudge(repostRate,time)
@@ -78,18 +79,27 @@ class Crowd:
             nbox.append(i+1)
         edgebox = []
         dg.add_nodes_from(nbox)
-        for i in range(m):
+        for i in range(n):
+            box = []
+            for j in range(int(m/n)):
+                randn = random.randint(0,n-1)
+                while randn==i or (randn in box):
+                    randn = random.randint(0,n-1)
+                edgebox.append((i,randn))
+                box.append(randn)
+            '''
             a = random.randint(1,n)
             b = random.randint(1,n)
             while ((a,b) in edgebox) or a==b:
                 a = random.randint(1,n)
                 b = random.randint(1,n)
             edgebox.append((a,b))
+            '''
         dg.add_edges_from(edgebox)
         return dg,edgebox
 
     def gammaFunc(self):
-        randomVar = numpy.random.gamma(self.time, scale=1.0, size=None)
+        randomVar = numpy.random.gamma(self.time*100, scale=1.0/100, size=None)
         return randomVar
 
     def update(self):
@@ -98,19 +108,29 @@ class Crowd:
         for n in self.dg:
             if self.dg.node[n].info == True:
                 nodes = self.dg[n]
+                nodesCount = len(nodes)
+                repostCount = int(self.dg.node[n].repostrate*nodesCount)
+                repostIndexBox = []
+                for i in range(repostCount):
+                    randn = random.randint(0,nodesCount-1)
+                    while randn in repostIndexBox:
+                        randn = random.randint(0,nodesCount-1)
+                    repostIndexBox.append(randn)
+                index = 0
                 for child in nodes:
                     if self.dg.node[child].info == True:
                         continue
-                    elif self.dg.node[n].repost:
+                    elif index in repostIndexBox:
                         if self.dg.node[child].access == False:
-                            self.dg.node[child].count = self.gammaFunc()
+                            self.dg.node[child].count = self.time
                             self.dg.node[child].access = True
+                    index += 1
             else:
                 if self.dg.node[n].access == True and self.dg.node[n].count <= 0:
                     self.dg.node[n].info = True
                     self.dg.node[n].calcPost(self.timeLine)
                     self.record.append((n,self.timeLine,self.dg.node[n].repost,self.dg.node[n].repostrate))
-                    self.nodecolor[n-1]=((self.timeLine/totalTime)**(1.0/3),(self.timeLine/totalTime)**(1.0/4),0.5+0.5*(self.timeLine/totalTime)**(1.0/5))
+                    #self.nodecolor[n-1]=((self.timeLine/totalTime)**(1.0/3),(self.timeLine/totalTime)**(1.0/4),0.5+0.5*(self.timeLine/totalTime)**(1.0/5))
                     #self.linkrecord.append(len(self.dg[n]))
                 elif self.dg.node[n].access == True:
                     self.dg.node[n].count -= interval
@@ -138,11 +158,23 @@ print totalTimebox
 print avgbox
 '''
 
+databox = []
+timebox = []
+while totalTime<4:
+    timebox.append(totalTime)
+    avg = 0
+    for i in range(100):
+        myCrowd = Crowd(n,m,time)
+        myCrowd.updateWithTime(totalTime)
+        avg += len(myCrowd.record)
+    avg /= 100
+    print avg,totalTime
+    databox.append(avg)
+    totalTime += interval
 
-myCrowd = Crowd(n,m,time)
-myCrowd.updateWithTime(totalTime)
-dg = myCrowd.getMap()
-print len(myCrowd.record)
+print databox
+print totalTime
+
 
 #nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor,with_labels=False)
 #plt.show()
