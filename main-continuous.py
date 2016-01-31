@@ -2,16 +2,24 @@ import numpy
 import math
 import random
 import networkx as nx
+import copy
 total = 1000
 internetDelay = 0.08
 timeInterval = 0.01
-rePostRate = 0.1
+rePostRate = 0.3
 explosiveness = 0.5
-newspaperDelay = 0.5
+newspaperDelay = 0.7
 totalTime = 4
 klink = 15
 randlink = 200
-radioDens = 10
+radioDens = 5
+radioTrust = 0.7
+alpha = 0.5
+radioDelay = 0.5
+TVDelay = 0.5
+convience = {'newspaper':0.4,'radio':0.4,'TV':0.4,'internet':0.4}
+
+
 
 def produceMediaDictionary(population,rnewspaper,rradio,rtv,rinternet):
     if rnewspaper > 100:
@@ -91,8 +99,10 @@ def gammaFunc(value,rate):
         randomVar = numpy.random.gamma(value*rate, scale=1.0/rate, size=None)
         return randomVar
 
+
+
 class Person:
-    def __init__(self,info,count,access=False,inInternetSystem=False,inNewspaperSystem=False,inRadioSystem=False,inTVSystem=False):
+    def __init__(self,info,count,access=False,inInternetSystem=False,inNewspaperSystem=False,inRadioSystem=False,inTVSystem=False,believe=0.5):
         self.info = info
         self.count = count
         self.access = access
@@ -103,16 +113,60 @@ class Person:
         self.inTVSystem = inTVSystem
         self.repostrate = rePostRate*explosiveness
         self.reposted = False
+        self.believe = believe
+        self.infoCount = 0
 
     def calcRepostProb(self,rate,time):
         p = rate
         self.repostrate=p*negativeExpo(time)*explosiveness
 
 
+class radioMOD:
+    def __init__(self,dg):
+        copy_dg = copy.deepcopy(dg)
+        self.dg = copy_dg
+        self.timeLine = 0
+        self.record = []
+        self.timerec = []
+        for i in range(1000):
+            self.dg.node[i].count = gammaFunc(radioDelay,30)
+            self.dg.node[i].access = True
+
+    def update(self):
+        self.timeLine += timeInterval
+        for i in range(total):
+            if self.dg.node[i].info or self.dg.node[i].inRadioSystem == False:
+                continue
+            self.dg.node[i].count -= timeInterval
+            if self.dg.node[i].count<=0:
+                rate = 1-(1-explosiveness*radioTrust)**radioDens
+                if judgeWithRate(rate):
+                    self.dg.node[i].info=True
+                    self.record.append(i)
+                    self.timerec.append(self.timeLine)
+                else:
+                    self.dg.node[i].inRadioSystem = False
+
+    def updateWithTime(self,time):
+        count = int(time/timeInterval)
+        for i in range(count):
+            self.update()
+
+    def getResult(self):
+        result = {}
+        self.updateWithTime(totalTime)
+        for i in range(len(self.record)):
+            result[self.record[i]] = {'time':self.timerec[i],'trust':self.dg.node[self.record[i]].believe*convience['radio']}
+        for i in range(1000):
+            if not (i in result):
+                result[i] = {'time':None,'trust':None}
+        return result
+
 
 class newspaperMOD:
     def __init__(self,dg):
-        self.dg = dg
+        copy_dg = copy.deepcopy(dg)
+        self.dg = copy_dg
         self.timeLine = 0
         self.record = []
         self.timerec = []
@@ -138,9 +192,12 @@ class newspaperMOD:
                 continue
             self.dg.node[i].count -= timeInterval
             if self.dg.node[i].count<=0:
-                self.dg.node[i].info=True
-                self.record.append(i)
-                self.timerec.append(self.timeLine)
+                if judgeWithRate(explosiveness):
+                    self.dg.node[i].info=True
+                    self.record.append(i)
+                    self.timerec.append(self.timeLine)
+                else:
+                    self.dg.node[i].inNewspaperSystem = False
 
     def updateWithTime(self,time):
         count = int(time/timeInterval)
@@ -151,40 +208,31 @@ class newspaperMOD:
         result = {}
         self.updateWithTime(totalTime)
         for i in range(len(self.record)):
-            result[self.record[i]] = self.timerec[i]
+            result[self.record[i]] = {'time':self.timerec[i],'trust':self.dg.node[self.record[i]].believe*convience['newspaper']}
         for i in range(1000):
             if not (i in result):
                 result[i] = -1
         return result
 
 class internetMOD:
-    def __init__(self,dg,rate,initialQuan):
-        self.dg = self.creatLittleWorldEdges(dg)
-        self.rate = rate
+    def __init__(self,dg,initialQuan):
+        copy_dg = copy.deepcopy(dg)
+        self.dg = self.creatLittleWorldEdges(copy_dg)
         self.timeLine = 0
         self.record = []
-        insystemCount = int(rate*1000)
-        chosen = []
-        for i in range(insystemCount):
-            randn = random.randint(0,999)
-            while randn in chosen:
-                randn = random.randint(0,999)
-            chosen.append(randn)
-        for i in range(1000):
-            if i in chosen:
-                self.dg.node[i] = Person(False,0,inInternetSystem=True)
-            else:
-                self.dg.node[i] = Person(False,0,inInternetSystem=False)
+        self.timerec = []
         initialGuys = []
         for i in range(initialQuan):
             randn = random.randint(0,999)
-            while not (randn in chosen) or randn in initialGuys:
+            while not self.dg.node[randn].inInternetSystem or randn in initialGuys:
                 randn = random.randint(0,999)
             initialGuys.append(randn)
         for n in initialGuys:
             self.dg.node[n].info = True
             self.dg.node[n].repost = True
-            self.record.append((n,0))
+            self.record.append(n)
+            self.timerec.append(0)
+            self.dg.node[n].infoCount += 1
 
     def creatLittleWorldEdges(self,dg):
         fullbox = []
@@ -238,6 +286,7 @@ class internetMOD:
                 if not self.dg.node[n].reposted:
                     self.dg.node[n].reposted = True
                     for child in nodes:
+                        self.dg.node[child].infoCount += 1
                         if self.dg.node[child].inInternetSystem == False or self.dg.node[child].info == True:
                             continue
                         else:
@@ -251,7 +300,8 @@ class internetMOD:
                 if self.dg.node[n].access == True and self.dg.node[n].info == False and self.dg.node[n].count < 0:
                     self.dg.node[n].info = True
                     self.dg.node[n].calcRepostProb(rePostRate,self.timeLine)
-                    self.record.append((n,self.timeLine))
+                    self.record.append(n)
+                    self.timerec.append(self.timeLine)
                 elif self.dg.node[n].access == True and self.dg.node[n].count > 0:
                     self.dg.node[n].count -= timeInterval
         return
@@ -271,6 +321,17 @@ class internetMOD:
         for i in range(ct):
             self.update()
 
+    def getResult(self):
+        result = {}
+        self.updateWithTime(totalTime)
+        for i in range(len(self.record)):
+            result[self.record[i]] = {'time':self.timerec[i],'trust':self.dg.node[self.record[i]].believe*self.dg.node[self.record[i]].infoCount*convience['internet']}
+        for i in range(1000):
+            if not (i in result):
+                result[i] = {'time':None,'trust':None}
+        return result
+
+
 
 
 class Crowd:
@@ -289,14 +350,18 @@ class Crowd:
             node.append(i)
         dg.add_nodes_from(node)
         for i in range(1000):
-            dg.node[i] = Person(False,None,inNewspaperSystem=self.newspaperBox[i],inRadioSystem=self.radioBox[i],inTVSystem=self.TVBox[i],inInternetSystem=self.internetBox)
+            #######################################
+            # Beta Distribution!! --------------> #
+            #######################################
+            dg.node[i] = Person(False,None,inNewspaperSystem=self.newspaperBox[i],inRadioSystem=self.radioBox[i],inTVSystem=self.TVBox[i],inInternetSystem=self.internetBox,believe=numpy.random.beta(alpha,1-alpha))
         edgebox = []
         fullbox = []
         return dg
 
-myCrowd = Crowd(0,0,0,1)
+myCrowd = Crowd(0,100,0,0)
 dg = myCrowd.dg
+myInter = internetMOD(dg,14)
 myNews = newspaperMOD(dg)
-myNews.updateWithTime(totalTime)
-print len(myNews.record)
-
+myRadio = radioMOD(dg)
+myRadio.getResult()
+print len(myRadio.record)
