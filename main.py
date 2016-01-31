@@ -6,7 +6,7 @@ import math
 #import multiprocessing
 print 'note: 25000-30000'
 n = 1000        #Population Count
-m = 40000      #Relationship Count
+m = 30000      #Relationship Count
 time = 0.08
 interval = 0.01
 repostRate = 10
@@ -28,7 +28,7 @@ class Person:
         self.count = count
         self.access = False
         self.repost = False
-        self.repostrate = repostRate*1.0/100
+        self.repostrate = repostRate*1.0/100*explosiveness
         self.spreading = spreading
         self.spreadCount = spreadCount
         self.reposted = False
@@ -39,6 +39,7 @@ class Person:
     def rePostJudge(self,rate,timeline):
         p = 1.0 * rate / 100
         self.repostrate=p*negativeExpo(timeline)*explosiveness
+        #print self.repostrate
         #print self.repostrate
         if random.random()<self.repostrate:
             return True
@@ -122,6 +123,7 @@ class Crowd:
                 nodes = self.dg[n]
                 nodesCount = len(nodes)
                 repostCount = custumInt(self.dg.node[n].repostrate*nodesCount)
+                #print repostCount
                 repostIndexBox = []
                 for i in range(repostCount):
                     randn = random.randint(0,nodesCount-1)
@@ -154,7 +156,7 @@ class Crowd:
                 if self.dg.node[n].access == True and self.dg.node[n].info == False and self.dg.node[n].count<0:
                     self.dg.node[n].info = True
 
-                    self.dg.node[n].calcPost(self.timeLine)
+                    self.dg.node[n].rePostJudge(repostRate,self.timeLine)
                     self.record.append((n,self.timeLine,self.dg.node[n].repost,self.dg.node[n].repostrate))
                     #self.nodecolor[n-1]=((self.timeLine/totalTime)**(1.0/3),(self.timeLine/totalTime)**(1.0/4),0.5+0.5*(self.timeLine/totalTime)**(1.0/5))
                     #self.linkrecord.append(len(self.dg[n]))
@@ -206,6 +208,7 @@ print mbox
 myCrowd = Crowd(n,m,time)
 myCrowd.updateWithTime(totalTime)
 print len(myCrowd.record)
+print myCrowd.i
 
 #nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor,with_labels=False)
 #plt.show()

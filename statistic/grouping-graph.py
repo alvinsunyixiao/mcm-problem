@@ -10,6 +10,7 @@ rePostRate = 0.1
 explosiveness = 1
 totalTime = 4
 randlink = 200
+klink = 15
 
 def calcRandPoint(reg):
     xmin = reg[0]
@@ -126,13 +127,20 @@ class Crowd:
             node.append(i)
         dg.add_nodes_from(node)
         edgebox = []
+        fullbox = []
+        for i in range(50):
+            fullbox.append(i)
         for reg in range(20):
             for j in range(50):
                 index1 = reg*50+j
-                for k in range(50):
-                    index2 = reg*50+k
-                    if index2==index1:
-                        continue
+                chosen = []
+                for k in range(klink):
+                    randn = random.randint(0,49)
+                    while (randn in chosen) or (reg*50+randn==index1):
+                        randn = random.randint(0,49)
+                    chosen.append(randn)
+                for k in range(klink):
+                    index2 = reg*50+chosen[k]
                     edgebox.append((index1,index2))
         dg.add_edges_from(edgebox)
         edgebox = []

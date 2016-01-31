@@ -20,5 +20,9 @@ def custumInt(fl):
     else:
         return int(fl)+1
 
+a = {1:1,2:3,4:5}
+print (3 in a)
+
+
 #nx.draw_networkx(dg,pos)
 #plt.show()
