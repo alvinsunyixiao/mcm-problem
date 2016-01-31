@@ -11,6 +11,15 @@ explosiveness = 1
 totalTime = 4
 randlink = 200
 
+def calcRandPoint(reg):
+    xmin = reg[0]
+    xmax = reg[1]
+    ymin = reg[2]
+    ymax = reg[3]
+    randx = random.random()*(xmax-xmin)+xmin
+    randy = random.random()*(ymax-ymin)+ymin
+    return (randx,randy)
+
 def negativeExpo(time):
     return math.e**(-2.575*time)
 
@@ -141,7 +150,20 @@ class Crowd:
         dg.add_edges_from(edgebox)
         return dg
 
+center = []
+regmap = []
+pos = []
+for i in range(5):
+    for j in range(4):
+        center.append((i+1,j+1))
+        regmap.append((i+1-0.25,i+1+0.25,j+1-0.25,j+1+0.25))
+for i in range(1000):
+    ireg = i/50
+    randpos = calcRandPoint(regmap[ireg])
+    pos.append(randpos)
+
+
 myCrowd = Crowd(0,0,0,0)
 dg = myCrowd.dg
-nx.draw_networkx(dg,arrows=False,with_labels=False,node_size=200)
+nx.draw_networkx(dg,arrows=False,with_labels=False,node_size=150,pos=pos)
 plt.show()
