@@ -9,9 +9,9 @@ n = 1000        #Population Count
 m = 30000      #Relationship Count
 time = 0.08
 interval = 0.01
-repostRate = 10
+repostRate = 10  #%%%%%%%%
 explosiveness = 0.5
-totalTime = 2
+totalTime = 0.1
 
 def custumInt(fl):
     if fl-int(fl)<0.5:
@@ -172,8 +172,8 @@ class Crowd:
 
 avgbox = []
 totalTimebox = []
-'''
-while totalTime<=4:
+
+while totalTime<=1:
     totalTimebox.append(totalTime)
     total = 0
     for i in range(100):
@@ -185,7 +185,7 @@ while totalTime<=4:
     totalTime += 0.01
 print totalTimebox
 print avgbox
-'''
+
 
 databox = []
 mbox = []

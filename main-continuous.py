@@ -13,10 +13,12 @@ totalTime = 4
 klink = 15
 randlink = 200
 radioDens = 5
-radioTrust = 0.7
+radioTrust = 0.1
 alpha = 0.5
 radioDelay = 0.5
 TVDelay = 0.5
+TVDens = 20
+TVTrust = 1.0/TVDens*0.8
 convience = {'newspaper':0.4,'radio':0.4,'TV':0.4,'internet':0.4}
 
 
@@ -120,6 +122,46 @@ class Person:
         p = rate
         self.repostrate=p*negativeExpo(time)*explosiveness
 
+class TVMOD:
+    def __init__(self,dg):
+        copy_dg = copy.deepcopy(dg)
+        self.dg = copy_dg
+        self.timeLine = 0
+        self.record = []
+        self.timerec = []
+        for i in range(1000):
+            self.dg.node[i].count = gammaFunc(TVDelay,30)
+            self.dg.node[i].access = True
+
+    def update(self):
+        self.timeLine += timeInterval
+        for i in range(total):
+            if self.dg.node[i].info or self.dg.node[i].inTVSystem == False:
+                continue
+            self.dg.node[i].count -= timeInterval
+            if self.dg.node[i].count<=0:
+                rate = 1-(1-explosiveness*TVTrust)**TVDens
+                if judgeWithRate(rate):
+                    self.dg.node[i].info=True
+                    self.record.append(i)
+                    self.timerec.append(self.timeLine)
+                else:
+                    self.dg.node[i].inTVSystem = False
+
+    def updateWithTime(self,time):
+        count = int(time/timeInterval)
+        for i in range(count):
+            self.update()
+
+    def getResult(self):
+        result = {}
+        self.updateWithTime(totalTime)
+        for i in range(len(self.record)):
+            result[self.record[i]] = {'time':self.timerec[i],'trust':self.dg.node[self.record[i]].believe*convience['TV']}
+        for i in range(1000):
+            if not (i in result):
+                result[i] = {'time':None,'trust':0}
+        return result
 
 class radioMOD:
     def __init__(self,dg):
@@ -159,7 +201,7 @@ class radioMOD:
             result[self.record[i]] = {'time':self.timerec[i],'trust':self.dg.node[self.record[i]].believe*convience['radio']}
         for i in range(1000):
             if not (i in result):
-                result[i] = {'time':None,'trust':None}
+                result[i] = {'time':None,'trust':0}
         return result
 
 
@@ -211,7 +253,7 @@ class newspaperMOD:
             result[self.record[i]] = {'time':self.timerec[i],'trust':self.dg.node[self.record[i]].believe*convience['newspaper']}
         for i in range(1000):
             if not (i in result):
-                result[i] = -1
+                result[i] = {'time':None,'trust':0}
         return result
 
 class internetMOD:
@@ -328,20 +370,21 @@ class internetMOD:
             result[self.record[i]] = {'time':self.timerec[i],'trust':self.dg.node[self.record[i]].believe*self.dg.node[self.record[i]].infoCount*convience['internet']}
         for i in range(1000):
             if not (i in result):
-                result[i] = {'time':None,'trust':None}
+                result[i] = {'time':None,'trust':0}
         return result
 
 
 
 
 class Crowd:
-    def __init__(self,newspaperRate,radioRate,TVRate,internetRate):
+    def __init__(self,newspaperRate,radioRate,TVRate,internetRate,netInitial = 1):
         calculatedRates = produceMediaDictionary(total,newspaperRate,radioRate,TVRate,internetRate)
         self.newspaperBox = calculatedRates[0]
         self.radioBox = calculatedRates[1]
         self.TVBox = calculatedRates[2]
         self.internetBox = calculatedRates[3]
         self.dg = self.creatSmallWorld(randlink)
+        self.netInitial = netInitial
 
     def creatSmallWorld(self,randlink):
         dg = nx.DiGraph()
@@ -358,10 +401,31 @@ class Crowd:
         fullbox = []
         return dg
 
-myCrowd = Crowd(0,100,0,0)
-dg = myCrowd.dg
-myInter = internetMOD(dg,14)
-myNews = newspaperMOD(dg)
-myRadio = radioMOD(dg)
-myRadio.getResult()
-print len(myRadio.record)
+    def getMin(self,tup):
+        Min = None
+        for i in tup:
+            if i == None:
+                continue
+            elif Min == None:
+                Min = i
+            elif i < Min:
+                Min = i
+        return Min
+
+    def combineResults(self):
+        myNews = newspaperMOD(self.dg)
+        myRadio = radioMOD(self.dg)
+        myTV = TVMOD(self.dg)
+        myInternet = internetMOD(self.dg,self.netInitial)
+        newsResult = myNews.getResult()
+        radioResult = myRadio.getResult()
+        TVResult = myTV.getResult()
+        internetResult = myInternet.getResult()
+        finalResult = {}
+        for key in range(1000):
+            eachTime = self.getMin((newsResult[key]['time'],radioResult[key]['time'],TVResult[key]['time'],internetResult[key]['time']))
+            eachTrust = newsResult[key]['trust']+radioResult[key]['trust']+TVResult[key]['trust']+internetResult[key]['trust']
+            finalResult[key] = {'time':eachTime,'trust':eachTrust}
+        return finalResult
+myCrowd = Crowd(0,0,100,0,netInitial=14)
+print myCrowd.combineResults()
