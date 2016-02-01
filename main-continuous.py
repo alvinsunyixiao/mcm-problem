@@ -23,7 +23,7 @@ rePostRate = 0.3
 explosiveness = 0.5
 newspaperDelay = 0.7
 totalTime = 3
-klink = 20
+klink = 25
 randlink = klink*10+50
 radioDens = 5
 radioTrust = 0.1
@@ -32,7 +32,7 @@ radioDelay = 0.5
 TVDelay = 0.5
 TVDens = 20
 TVTrust = 1.0/TVDens*0.8
-convience = {'newspaper':2,'radio':1,'TV':1.3,'internet':0.4}
+convience = {'newspaper':1,'radio':0.6,'TV':0.8,'internet':0.4}
 
 print 'note: '
 print 'klink: '+str(klink)
@@ -490,14 +490,15 @@ def iterateExp():
     expLst = []
     aveLst_sp = []
     aveLst_b = []
-    yearlist = [5,9,-3]
-    for item in yearlist:
-        yearsdata[item]
-        average_sp = 0.0
+    global explosiveness
+    explosiveness = 0.2
+    while explosiveness < 0.81:
+        print explosiveness
         average_b = 0.0
-        experiment = 1
+        average_sp = 0.0
+        experiment = 50
         for kkk in range(0,experiment):
-            myCrowd = Crowd(newspaperdata[item],radiodata[item],tvdata[item],internetdata[item],netInitial=10)
+            myCrowd = Crowd(newspaperdata[-1],radiodata[-1],tvdata[-1],internetdata[-1],netInitial=10)
             result = myCrowd.combineResults()
 
             #qmax
@@ -519,17 +520,19 @@ def iterateExp():
                 if groupArray[i]:
                     count += 1
             '''
-            #-----OVERWRITE with TRUST-----#
+
             count = 0
             for i in range(1000):
                 if result[i]['trust'] > 1:
                     count += 1
             average_b += count
+
         average_sp /= experiment
         average_b /= experiment
-        expLst.append(yearsdata[item])
+        expLst.append(explosiveness)
         aveLst_sp.append(average_sp)
         aveLst_b.append(average_b)
+        explosiveness += 0.01
     print expLst
     print aveLst_sp
     print aveLst_b
