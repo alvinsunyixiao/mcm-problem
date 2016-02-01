@@ -170,35 +170,5 @@ class Crowd:
         for i in range(ct):
             self.update()
 
-avgbox = []
-totalTimebox = []
 
-while totalTime<=1:
-    totalTimebox.append(totalTime)
-    total = 0
-    for i in range(100):
-        myCrowd = Crowd(n,m,time)
-        myCrowd.updateWithTime(totalTime)
-        total += len(myCrowd.record)
-    avg = int(total/100)
-    avgbox.append(avg)
-    totalTime += 0.1
-print totalTimebox
-print avgbox
-
-
-databox = []
-mbox = []
-
-while m<30000:
-    mbox.append(m)
-    avg = 0
-    for i in range(100):
-        myCrowd = Crowd(n,m,time)
-        myCrowd.updateWithTime(totalTime)
-        avg += len(myCrowd.record)
-    avg /= 100
-    print avg,m
-    databox.append(avg)
-    m += 10
 
