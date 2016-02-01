@@ -20,10 +20,10 @@ total = 1000
 internetDelay = 0.08
 timeInterval = 0.01
 rePostRate = 0.3
-explosiveness = 0.2
+explosiveness = 0.5
 newspaperDelay = 0.7
 totalTime = 3
-klink = 20
+klink = 25
 randlink = klink*10+50
 radioDens = 5
 radioTrust = 0.1
@@ -34,6 +34,8 @@ TVDens = 20
 TVTrust = 1.0/TVDens*0.8
 convience = {'newspaper':1,'radio':0.9,'TV':0.8,'internet':0.7}
 
+print 'note: '
+print 'klink: '+str(klink)
 
 def produceMediaDictionary(population,rnewspaper,rradio,rtv,rinternet):
     if rnewspaper > 100:
@@ -488,12 +490,11 @@ def iterateExp():
     expLst = []
     aveLst = []
     global explosiveness
-    explosiveness = 0.6
-    print 'note: '+str(explosiveness)+'-'+str(explosiveness+0.2)
+    explosiveness = 0.2
     while explosiveness < 0.81:
         print explosiveness
         average = 0.0
-        experiment = 100
+        experiment = 50
         for kkk in range(0,experiment):
             myCrowd = Crowd(newspaperdata[-1],radiodata[-1],tvdata[-1],internetdata[-1],netInitial=10)
             result = myCrowd.combineResults()
@@ -515,7 +516,11 @@ def iterateExp():
             for i in range(0,20):
                 if groupArray[i]:
                     count += 1
-
+            #-----OVERWRITE with TRUST-----#
+            count = 0
+            for i in range(1000):
+                if result[i]['trust'] > 1:
+                    count += 1
             average += count
         average /= experiment
         expLst.append(explosiveness)
@@ -526,11 +531,19 @@ def iterateExp():
 iterateExp()
 #iterateLink()
 '''
-myCrowd = Crowd(0,0,0,100,netInitial=10)
+myCrowd = Crowd(newspaperdata[-1],radiodata[-1],tvdata[-1],internetdata[-1],netInitial=10)
 rs = myCrowd.combineResults()
+for key in rs:
+    print key,rs[key]['trust']
+
 count = 0
 for key in rs:
     if rs[key]['time'] != None:
         count+= 1
+print count
+count = 0
+for key in rs:
+    if rs[key]['trust'] > 1:
+        count += 1
 print count
 '''
