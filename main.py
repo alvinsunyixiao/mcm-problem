@@ -189,7 +189,7 @@ print avgbox
 
 databox = []
 mbox = []
-'''
+
 while m<30000:
     mbox.append(m)
     avg = 0
@@ -202,15 +202,3 @@ while m<30000:
     databox.append(avg)
     m += 10
 
-print databox
-print mbox
-'''
-'''
-myCrowd = Crowd(n,m,time)
-myCrowd.updateWithTime(totalTime)
-print len(myCrowd.record)
-print myCrowd.i
-'''
-
-#nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor,with_labels=False)
-#plt.show()
