@@ -7,10 +7,10 @@ total = 1000
 internetDelay = 0.08
 timeInterval = 0.01
 rePostRate = 0.3
-explosiveness = 0.5
+explosiveness = 0.8
 newspaperDelay = 0.7
 totalTime = 2
-klink = 25
+klink = 15
 randlink = klink*10+50
 radioDens = 5
 radioTrust = 0.1
@@ -449,8 +449,9 @@ def iterateLink():
     avelst = []
     global klink
     for klink in range(15,36):
+        print klink
         average = 0
-        experiment = 1
+        experiment = 100
         for kkk in range(0,experiment):
             myCrowd = Crowd(0,0,0,100,netInitial=20)
             result = myCrowd.combineResults()
@@ -475,7 +476,7 @@ def iterateExp():
         average = 0.0
         experiment = 100
         for kkk in range(0,experiment):
-            myCrowd = Crowd(0,0,0,100,netInitial=5)
+            myCrowd = Crowd(0,0,0,100,netInitial=10)
             result = myCrowd.combineResults()
             '''
             #qmax
@@ -503,4 +504,5 @@ def iterateExp():
         explosiveness += 0.01
     print expLst
     print aveLst
-iterateExp()
+#iterateExp()
+iterateLink()
