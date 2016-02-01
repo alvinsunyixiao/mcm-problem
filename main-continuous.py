@@ -3,14 +3,27 @@ import math
 import random
 import networkx as nx
 import copy
+
+##########################
+#------DATA Section------#
+##########################
+
+tvdata = [0,0,0,0,0,0,9,63,85,90,95,97,98,98,98,98,98,98,98,98,98,98,98]
+radiodata = [0,20,39,55,73,82,80,91,94,94,95,99,99,99,99,99,99,99,99,99,99,99,99]
+yearsdata = [1920,1925,1930,1935,1940,1945,1950,1955,1960,1965,1970,1975,1980,1985,1990,1995,2000,2005,2010,2011,2012,2013,2014]
+internetdata = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.8,9.2,43.1,68.0,71.7,69.7,79.3,84.2,87.4]
+newspaperdata =[109.90184324158706, 122.45127616294623, 135.29367795575217, 126.23338096668866, 130.92343894289897, 145.57656127924932, 148.7016534119077, 142.29382454163897, 137.20741052347248, 130.8302448582204, 127.4612907946311, 118.28779924660442, 114.95516483268226, 110.83677952700845, 104.9032884174072, 93.1205015131286, 86.80000000006874, 75.91375002826089, 59.05552451777496, 59.95106320184407, 59.358991191811846, 60.637578515055914, 58.201582314251176]
+#####################################################
+#-----------------------CODE------------------------#
+#####################################################
 total = 1000
 internetDelay = 0.08
 timeInterval = 0.01
 rePostRate = 0.3
-explosiveness = 0.4
+explosiveness = 0.2
 newspaperDelay = 0.7
-totalTime = 2
-klink = 25
+totalTime = 3
+klink = 20
 randlink = klink*10+50
 radioDens = 5
 radioTrust = 0.1
@@ -19,8 +32,7 @@ radioDelay = 0.5
 TVDelay = 0.5
 TVDens = 20
 TVTrust = 1.0/TVDens*0.8
-convience = {'newspaper':0.4,'radio':0.4,'TV':0.4,'internet':0.4}
-print 'note: link: '+str(klink)
+convience = {'newspaper':1,'radio':0.9,'TV':0.8,'internet':0.7}
 
 
 def produceMediaDictionary(population,rnewspaper,rradio,rtv,rinternet):
@@ -476,13 +488,14 @@ def iterateExp():
     expLst = []
     aveLst = []
     global explosiveness
-    explosiveness = 0.2
+    explosiveness = 0.6
+    print 'note: '+str(explosiveness)+'-'+str(explosiveness+0.2)
     while explosiveness < 0.81:
         print explosiveness
         average = 0.0
         experiment = 100
         for kkk in range(0,experiment):
-            myCrowd = Crowd(0,0,0,100,netInitial=10)
+            myCrowd = Crowd(newspaperdata[-1],radiodata[-1],tvdata[-1],internetdata[-1],netInitial=10)
             result = myCrowd.combineResults()
             '''
             #qmax
