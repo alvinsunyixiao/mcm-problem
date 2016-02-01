@@ -248,6 +248,19 @@ class newspaperMOD:
                 self.nodecolor.append((1,0,0))
         self.dg.add_weighted_edges_from(edgebox)
         for i in range(20):
+            self.nodecolor.append((0,1,0))
+        edgebox = []
+        for i in range(20):
+            lcstr = 'local-'+str(i)
+            for i in range(18):
+                randn = random.randint(0,999)
+                randreg = randn/50
+                while ((lcstr,randn) in edgebox) or randreg == i:
+                    randn = random.randint(0,999)
+                    randreg = randn/50
+                edgebox.append((lcstr,randn,0))
+        self.dg.add_weighted_edges_from(edgebox)
+        for i in range(20):
             lcstr = 'local-'+str(i)
             for j in range(50):
                 index = i*50 + j
@@ -261,7 +274,7 @@ class newspaperMOD:
                 continue
             self.dg.node[i].count -= timeInterval
             if self.dg.node[i].count<=0:
-                if judgeWithRate(explosiveness/10):
+                if judgeWithRate(explosiveness/2):
                     self.dg.node[i].info=True
                     self.record.append(i)
                     self.timerec.append(self.timeLine)
@@ -281,6 +294,9 @@ class newspaperMOD:
         for i in range(1000):
             if not (i in result):
                 result[i] = {'time':None,'trust':0}
+        for i in range(20):
+            lcstr = 'local-'+str(i)
+            result[lcstr] = {'time':None,'trust':None}
         return result
 
 class internetMOD:
@@ -479,12 +495,12 @@ class Crowd:
             finalResult[key] = {'time':eachTime,'trust':eachTrust}
         return finalResult
 
-myCrowd = Crowd(0,0,0,100,netInitial=10)
+myCrowd = Crowd(100,0,0,0,netInitial=10)
 myNewspaper = newspaperMOD(myCrowd.dg)
 results = myNewspaper.getResult()
 center = []
 regmap = []
-pos = []
+pos = {}
 for i in range(5):
     for j in range(4):
         center.append((i+1,j+1))
@@ -492,7 +508,12 @@ for i in range(5):
 for i in range(1000):
     ireg = i/50
     randpos = calcRandPoint(regmap[ireg])
-    pos.append(randpos)
+    pos[i] = randpos
+for i in range(5):
+    for j in range(4):
+        index = i*4+j
+        lcstr = 'local-'+str(index)
+        pos[lcstr] = (i+1,j+1+0.5)
 
 dg = myNewspaper.dg
 last = 0
@@ -508,9 +529,10 @@ for key in results:
         continue
     progress = results[key]['time']/last
     myNewspaper.nodecolor[key] = (progress,progress,0.5+0.5*progress)
-nx.draw_networkx(dg,arrows=False,with_labels=False,pos=pos,node_size=200,node_color=myNewspaper.nodecolor)
-plt.show()
 print len(myNewspaper.record)
+nx.draw_networkx(dg,arrows=False,with_labels=False,pos=pos,node_size=150,node_color=myNewspaper.nodecolor)
+plt.show()
+
 
 '''
 def iterateLink():
