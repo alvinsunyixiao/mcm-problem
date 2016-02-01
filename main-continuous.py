@@ -7,7 +7,7 @@ total = 1000
 internetDelay = 0.08
 timeInterval = 0.01
 rePostRate = 0.3
-explosiveness = 0.8
+explosiveness = 0.5
 newspaperDelay = 0.7
 totalTime = 2
 klink = 15
@@ -235,7 +235,7 @@ class newspaperMOD:
                 continue
             self.dg.node[i].count -= timeInterval
             if self.dg.node[i].count<=0:
-                if judgeWithRate(explosiveness):
+                if judgeWithRate(explosiveness/10):
                     self.dg.node[i].info=True
                     self.record.append(i)
                     self.timerec.append(self.timeLine)
@@ -505,4 +505,11 @@ def iterateExp():
     print expLst
     print aveLst
 #iterateExp()
-iterateLink()
+#iterateLink()
+myCrowd = Crowd(150,0,0,0)
+rs = myCrowd.combineResults()
+count = 0
+for key in rs:
+    if rs[key]['time'] != None:
+        count+= 1
+print count
