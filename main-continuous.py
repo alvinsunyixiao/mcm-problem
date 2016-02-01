@@ -265,6 +265,12 @@ class internetMOD:
         self.record = []
         self.timerec = []
         initialGuys = []
+        totalInSys = 0
+        for n in dg:
+            if self.dg.node[n].inInternetSystem:
+                totalInSys += 1
+        if initialQuan>totalInSys:
+            initialQuan = totalInSys
         for i in range(initialQuan):
             randn = random.randint(0,999)
             while not self.dg.node[randn].inInternetSystem or randn in initialGuys:
@@ -412,7 +418,7 @@ class Crowd:
             #######################################
             # Beta Distribution!! --------------> #
             #######################################
-            dg.node[i] = Person(False,None,inNewspaperSystem=self.newspaperBox[i],inRadioSystem=self.radioBox[i],inTVSystem=self.TVBox[i],inInternetSystem=self.internetBox,believe=numpy.random.beta(alpha,1-alpha))
+            dg.node[i] = Person(False,None,inNewspaperSystem=self.newspaperBox[i],inRadioSystem=self.radioBox[i],inTVSystem=self.TVBox[i],inInternetSystem=self.internetBox[i],believe=numpy.random.beta(alpha,1-alpha))
         edgebox = []
         fullbox = []
         return dg
@@ -506,7 +512,7 @@ def iterateExp():
     print aveLst
 #iterateExp()
 #iterateLink()
-myCrowd = Crowd(150,0,0,0)
+myCrowd = Crowd(100,0,0,0)
 rs = myCrowd.combineResults()
 count = 0
 for key in rs:
