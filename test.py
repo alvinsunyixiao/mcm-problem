@@ -1,5 +1,5 @@
 import numpy as np
-print np.random.gamma(0.3*30,1.0/30)
+
 import networkx as nx
 import matplotlib.pyplot as plt
 '''
@@ -94,6 +94,24 @@ print produceMediaDictionary(10,98,98,50,80)
 #plt.show()
 '''
 
-a = [1,2,3,4,5]
-a.insert(0,0)
-print a
+a = '0.3,'
+index = -1
+encounter = False
+count = 0
+while index<len(a)-1:
+    index += 1
+    if a[index]=='.':
+        encounter = True
+        continue
+    if a[index]==',':
+        encounter = False
+        count = 0
+        continue
+    if encounter:
+        count += 1
+    if count>=4:
+        j = 1
+        while a[index+j] != ',' and a[index+j] != '\n':
+            j += 1
+        a = a[0:index+1]+a[index+j:]
+        count = 0
