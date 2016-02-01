@@ -182,7 +182,7 @@ while totalTime<=1:
         total += len(myCrowd.record)
     avg = int(total/100)
     avgbox.append(avg)
-    totalTime += 0.01
+    totalTime += 0.1
 print totalTimebox
 print avgbox
 
@@ -205,10 +205,12 @@ while m<30000:
 print databox
 print mbox
 '''
+'''
 myCrowd = Crowd(n,m,time)
 myCrowd.updateWithTime(totalTime)
 print len(myCrowd.record)
 print myCrowd.i
+'''
 
 #nx.draw_networkx(dg,arrows=False,node_color=myCrowd.nodecolor,with_labels=False)
 #plt.show()

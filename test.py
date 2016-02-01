@@ -91,15 +91,3 @@ print produceMediaDictionary(10,98,98,50,80)
 #nx.draw_networkx(dg,pos)
 #plt.show()
 '''
-def getMin(tup):
-    Min = None
-    for i in tup:
-        if i == None:
-            continue
-        elif Min == None:
-            Min = i
-        elif i < Min:
-            Min = i
-    return Min
-
-print getMin((None,1,0.5,None))

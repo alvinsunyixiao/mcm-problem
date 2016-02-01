@@ -9,9 +9,9 @@ timeInterval = 0.01
 rePostRate = 0.3
 explosiveness = 0.5
 newspaperDelay = 0.7
-totalTime = 4
-klink = 15
-randlink = 200
+totalTime = 2
+klink = 25
+randlink = klink*10+50
 radioDens = 5
 radioTrust = 0.1
 alpha = 0.5
@@ -117,6 +117,7 @@ class Person:
         self.reposted = False
         self.believe = believe
         self.infoCount = 0
+        self.spreading = False
 
     def calcRepostProb(self,rate,time):
         p = rate
@@ -275,6 +276,8 @@ class internetMOD:
             self.record.append(n)
             self.timerec.append(0)
             self.dg.node[n].infoCount += 1
+            self.dg.node[n].spreading = True
+        self.spreadCount = []
 
     def creatLittleWorldEdges(self,dg):
         fullbox = []
@@ -311,6 +314,7 @@ class internetMOD:
 
     def update(self):
         self.timeLine += timeInterval
+        spreadCt = 0
         for n in self.dg:
             if self.dg.node[n].inInternetSystem == False:
                 continue
@@ -325,6 +329,7 @@ class internetMOD:
                         randn = random.randint(0,nodesCount-1)
                     repostIndexBox.append(randn)
                 index = 0
+                spread = False
                 if not self.dg.node[n].reposted:
                     self.dg.node[n].reposted = True
                     for child in nodes:
@@ -332,12 +337,22 @@ class internetMOD:
                         if self.dg.node[child].inInternetSystem == False or self.dg.node[child].info == True:
                             continue
                         else:
+                            spread = True
                             if self.dg.node[child].access == False:
                                 self.dg.node[child].count = internetDelay
                                 self.dg.node[child].access = True
                             if index in repostIndexBox:
                                 self.dg.node[child].repost = True
                         index += 1
+                else:
+                    for child in nodes:
+                        if not (self.dg.node[child].inInternetSystem):
+                            continue
+                        elif self.dg.node[child].access == True and self.dg.node[child].info == False:
+                            spread = True
+                            break
+                if spread:
+                    spreadCt += 1
             else:
                 if self.dg.node[n].access == True and self.dg.node[n].info == False and self.dg.node[n].count < 0:
                     self.dg.node[n].info = True
@@ -346,6 +361,7 @@ class internetMOD:
                     self.timerec.append(self.timeLine)
                 elif self.dg.node[n].access == True and self.dg.node[n].count > 0:
                     self.dg.node[n].count -= timeInterval
+        self.spreadCount.append(spreadCt)
         return
 
     def howManyWorldKnows(self):
@@ -427,5 +443,64 @@ class Crowd:
             eachTrust = newsResult[key]['trust']+radioResult[key]['trust']+TVResult[key]['trust']+internetResult[key]['trust']
             finalResult[key] = {'time':eachTime,'trust':eachTrust}
         return finalResult
-myCrowd = Crowd(0,0,100,0,netInitial=14)
-print myCrowd.combineResults()
+
+def iterateLink():
+    klst = []
+    avelst = []
+    global klink
+    for klink in range(15,36):
+        average = 0
+        experiment = 1
+        for kkk in range(0,experiment):
+            myCrowd = Crowd(0,0,0,100,netInitial=20)
+            result = myCrowd.combineResults()
+            count = 1000
+            for i in range(0,1000):
+                if result[i]["time"] == None:
+                    count -= 1
+            average += count
+        average /= experiment
+        klst.append(klink)
+        avelst.append(average)
+    print klst
+    print avelst
+
+def iterateExp():
+    expLst = []
+    aveLst = []
+    global explosiveness
+    explosiveness = 0.2
+    while explosiveness < 0.81:
+        print explosiveness
+        average = 0.0
+        experiment = 100
+        for kkk in range(0,experiment):
+            myCrowd = Crowd(0,0,0,100,netInitial=5)
+            result = myCrowd.combineResults()
+            '''
+            #qmax
+            count = 1000
+            for i in range(0,1000):
+                if result[i]["time"] == None:
+                    count -= 1
+            '''
+            groupArray = []
+            for i in range(0,20):
+                groupArray.append(False)
+            for i in range(0,1000):
+                groupN = i/50
+                if result[i]["time"] != None:
+                    groupArray[groupN] = True
+            count = 0
+            for i in range(0,20):
+                if groupArray[i]:
+                    count += 1
+
+            average += count
+        average /= experiment
+        expLst.append(explosiveness)
+        aveLst.append(average)
+        explosiveness += 0.01
+    print expLst
+    print aveLst
+iterateExp()
