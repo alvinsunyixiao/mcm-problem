@@ -475,7 +475,7 @@ def iterateExp():
         average = 0.0
         experiment = 100
         for kkk in range(0,experiment):
-            myCrowd = Crowd(0,0,0,100,netInitial=5)
+            myCrowd = Crowd(0,0,0,100,netInitial=10)
             result = myCrowd.combineResults()
             '''
             #qmax
