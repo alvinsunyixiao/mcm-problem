@@ -7,7 +7,7 @@ total = 1000
 internetDelay = 0.08
 timeInterval = 0.01
 rePostRate = 0.3
-explosiveness = 0.5
+explosiveness = 0.8
 newspaperDelay = 0.7
 totalTime = 2
 klink = 15
@@ -20,7 +20,7 @@ TVDelay = 0.5
 TVDens = 20
 TVTrust = 1.0/TVDens*0.8
 convience = {'newspaper':0.4,'radio':0.4,'TV':0.4,'internet':0.4}
-
+print 'note: explosiveness: '+str(explosiveness)
 
 
 def produceMediaDictionary(population,rnewspaper,rradio,rtv,rinternet):
@@ -459,7 +459,7 @@ def iterateLink():
         average = 0
         experiment = 100
         for kkk in range(0,experiment):
-            myCrowd = Crowd(0,0,0,100,netInitial=20)
+            myCrowd = Crowd(0,0,0,100,netInitial=10)
             result = myCrowd.combineResults()
             count = 1000
             for i in range(0,1000):
@@ -511,11 +511,13 @@ def iterateExp():
     print expLst
     print aveLst
 #iterateExp()
-#iterateLink()
-myCrowd = Crowd(100,0,0,0)
+iterateLink()
+'''
+myCrowd = Crowd(0,0,0,100,netInitial=10)
 rs = myCrowd.combineResults()
 count = 0
 for key in rs:
     if rs[key]['time'] != None:
         count+= 1
 print count
+'''
