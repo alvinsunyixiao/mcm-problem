@@ -10,7 +10,7 @@ rePostRate = 0.3
 explosiveness = 0.4
 newspaperDelay = 0.7
 totalTime = 2
-klink = 15
+klink = 25
 randlink = klink*10+50
 radioDens = 5
 radioTrust = 0.1
@@ -20,7 +20,7 @@ TVDelay = 0.5
 TVDens = 20
 TVTrust = 1.0/TVDens*0.8
 convience = {'newspaper':0.4,'radio':0.4,'TV':0.4,'internet':0.4}
-print 'note: explosiveness: '+str(explosiveness)
+print 'note: link: '+str(klink)
 
 
 def produceMediaDictionary(population,rnewspaper,rradio,rtv,rinternet):
@@ -510,8 +510,8 @@ def iterateExp():
         explosiveness += 0.01
     print expLst
     print aveLst
-#iterateExp()
-iterateLink()
+iterateExp()
+#iterateLink()
 '''
 myCrowd = Crowd(0,0,0,100,netInitial=10)
 rs = myCrowd.combineResults()
