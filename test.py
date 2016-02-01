@@ -1,8 +1,8 @@
 import numpy as np
 print np.random.gamma(0.3*30,1.0/30)
-'''
 import networkx as nx
 import matplotlib.pyplot as plt
+'''
 import random
 import numpy
 n = 20        #Population Count
@@ -93,3 +93,7 @@ print produceMediaDictionary(10,98,98,50,80)
 #nx.draw_networkx(dg,pos)
 #plt.show()
 '''
+
+a = [1,2,3,4,5]
+a.insert(0,0)
+print a
