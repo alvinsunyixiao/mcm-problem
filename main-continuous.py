@@ -3,7 +3,7 @@ import math
 import random
 import networkx as nx
 import copy
-
+import matplotlib.pyplot as plt
 ##########################
 #------DATA Section------#
 ##########################
@@ -13,6 +13,14 @@ radiodata = [0,20,39,55,73,82,80,91,94,94,95,99,99,99,99,99,99,99,99,99,99,99,99
 yearsdata = [1920,1925,1930,1935,1940,1945,1950,1955,1960,1965,1970,1975,1980,1985,1990,1995,2000,2005,2010,2011,2012,2013,2014]
 internetdata = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.8,9.2,43.1,68.0,71.7,69.7,79.3,84.2,87.4]
 newspaperdata =[109.90184324158706, 122.45127616294623, 135.29367795575217, 126.23338096668866, 130.92343894289897, 145.57656127924932, 148.7016534119077, 142.29382454163897, 137.20741052347248, 130.8302448582204, 127.4612907946311, 118.28779924660442, 114.95516483268226, 110.83677952700845, 104.9032884174072, 93.1205015131286, 86.80000000006874, 75.91375002826089, 59.05552451777496, 59.95106320184407, 59.358991191811846, 60.637578515055914, 58.201582314251176]
+
+for i in range(2015,2051):
+    yearsdata.append(i)
+    tvdata.append(98)
+    radiodata.append(99)
+    newspaperdata.append(2978.4369263956787 - 1.448409993618103*i)
+    internetdata.append(99.83367 - 66.6891*math.e**(-0.0996124*i + 199.0255752))
+
 #####################################################
 #-----------------------CODE------------------------#
 #####################################################
@@ -24,7 +32,7 @@ explosiveness = 0.5
 newspaperDelay = 0.7
 totalTime = 3
 klink = 25
-randlink = klink*10+50
+randlink = klink*40+200
 radioDens = 5
 radioTrust = 0.1
 alpha = 0.5
@@ -144,10 +152,12 @@ class TVMOD:
         self.timeLine = 0
         self.record = []
         self.timerec = []
+        self.edgeCount = 0
         for i in range(1000):
             self.dg.node[i].count = gammaFunc(TVDelay,30)
             self.dg.node[i].access = True
-
+            if self.dg.node[i].inTVSystem:
+                self.edgeCount += 20
     def update(self):
         self.timeLine += timeInterval
         for i in range(total):
@@ -185,9 +195,12 @@ class radioMOD:
         self.timeLine = 0
         self.record = []
         self.timerec = []
+        self.edgeCount = 0
         for i in range(1000):
             self.dg.node[i].count = gammaFunc(radioDelay,30)
             self.dg.node[i].access = True
+            if self.dg.node[i].inRadioSystem:
+                self.edgeCount += 5
 
     def update(self):
         self.timeLine += timeInterval
@@ -227,6 +240,7 @@ class newspaperMOD:
         self.timeLine = 0
         self.record = []
         self.timerec = []
+        self.edgeCount = 0
         edgebox = []
         for i in range(total/50):
             lcstr = 'local-'+str(i)
@@ -234,6 +248,8 @@ class newspaperMOD:
             for j in range(total/20):
                 index = j+i*50
                 edgebox.append((lcstr,index,gammaFunc(newspaperDelay,40)))
+                if self.dg.node[index].inNewspaperSystem:
+                    self.edgeCount += 1
         self.dg.add_weighted_edges_from(edgebox)
         for i in range(20):
             lcstr = 'local-'+str(i)
@@ -274,6 +290,7 @@ class newspaperMOD:
 class internetMOD:
     def __init__(self,dg,initialQuan):
         copy_dg = copy.deepcopy(dg)
+        self.edgeCount = 0
         self.dg = self.creatLittleWorldEdges(copy_dg)
         self.timeLine = 0
         self.record = []
@@ -316,6 +333,8 @@ class internetMOD:
                 for k in range(klink):
                     index2 = reg*50+chosen[k]
                     edgebox.append((index1,index2))
+                    if dg.node[index1].inInternetSystem and dg.node[index2].inInternetSystem:
+                        self.edgeCount += 1
         dg.add_edges_from(edgebox)
         edgebox = []
         for i in range(randlink):
@@ -329,6 +348,8 @@ class internetMOD:
                 areg = a/50
                 breg = b/50
             edgebox.append((a,b))
+            if dg.node[a].inInternetSystem and dg.node[b].inInternetSystem:
+                self.edgeCount += 1
         dg.add_edges_from(edgebox)
         return dg
 
@@ -464,6 +485,21 @@ class Crowd:
             finalResult[key] = {'time':eachTime,'trust':eachTrust}
         return finalResult
 
+relationDev = []
+for dataIndex in range(len(yearsdata)):
+    myCrowd = Crowd(newspaperdata[dataIndex],radiodata[dataIndex],tvdata[dataIndex],internetdata[dataIndex],netInitial=10)
+    myNewspaper = newspaperMOD(myCrowd.dg)
+    myRadio = radioMOD(myCrowd.dg)
+    myTV = TVMOD(myCrowd.dg)
+    myInternet = internetMOD(myCrowd.dg,myCrowd.netInitial)
+    edgeTotal = myNewspaper.edgeCount+myRadio.edgeCount+myTV.edgeCount+myInternet.edgeCount
+    relationDev.append(edgeTotal)
+print yearsdata
+print relationDev
+plt.plot(yearsdata,relationDev)
+plt.show()
+
+'''
 def iterateLink():
     klst = []
     avelst = []
@@ -508,6 +544,7 @@ def iterateExp():
                     count -= 1
             average_sp += count
             '''
+'''
             groupArray = []
             for i in range(0,20):
                 groupArray.append(False)
@@ -520,7 +557,7 @@ def iterateExp():
                 if groupArray[i]:
                     count += 1
             '''
-
+'''
             count = 0
             for i in range(1000):
                 if result[i]['trust'] > 1:
@@ -538,7 +575,7 @@ def iterateExp():
     print aveLst_b
 iterateExp()
 #iterateLink()
-'''
+
 myCrowd = Crowd(newspaperdata[-1],radiodata[-1],tvdata[-1],internetdata[-1],netInitial=10)
 rs = myCrowd.combineResults()
 for key in rs:
