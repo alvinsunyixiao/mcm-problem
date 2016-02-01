@@ -50,8 +50,22 @@ x = [0.2, 0.21000000000000002, 0.22000000000000003, 0.23000000000000004, 0.24000
 plt.plot(x,data_15[0],color='red')
 plt.plot(x,data_20[0],color='green')
 plt.plot(x,data_25[0],color='blue')
-'''
+
 plt.plot(x,data_15[1],color='red',linestyle='-')
 plt.plot(x,data_20[1],color='green',linestyle='-')
 plt.plot(x,data_25[1],color='blue',linestyle='-')
 plt.show()
+'''
+def convertNumpyArr(nparr):
+    box = []
+    for i in nparr:
+        box.append(i)
+    return box
+
+print convertNumpyArr(data_15[0])
+print convertNumpyArr(data_20[0])
+print convertNumpyArr(data_25[0])
+print convertNumpyArr(data_15[1])
+print convertNumpyArr(data_20[1])
+print convertNumpyArr(data_25[1])
+print x
