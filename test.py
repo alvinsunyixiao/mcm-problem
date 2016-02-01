@@ -1,3 +1,5 @@
+import numpy as np
+print np.random.gamma(0.3*30,1.0/30)
 '''
 import networkx as nx
 import matplotlib.pyplot as plt
