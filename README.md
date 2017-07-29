@@ -1,4 +1,4 @@
-# 2016 ICM Problem
+# Team 46648 @ ICM 2016
 
 Solution Paper URL: https://github.com/alvinsunyixiao/mcm-problem/blob/master/46648.pdf  
 Certification URL: http://www.comap-math.com/mcm/2016Certs/46648.pdf  
